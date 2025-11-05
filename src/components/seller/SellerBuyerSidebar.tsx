@@ -1,56 +1,18 @@
 "use client";
 
-import { useEffect, useState } from 'react';
 import SellerNavigationList from './SellerNavigationList';
 
 interface SellerBuyerSidebarProps {
   storeId: string;
+  storeName: string;
+  userRoles: ('buyer' | 'seller')[];
   marketplaceTemplate?: 'general' | 'product' | 'rental' | 'service';
   onNavigate?: () => void;
+  userName?: string;
+  userEmail?: string;
 }
 
-export default function SellerBuyerSidebar({ storeId, marketplaceTemplate, onNavigate }: SellerBuyerSidebarProps) {
-  const [userRoles, setUserRoles] = useState<('buyer' | 'seller')[]>([]);
-  const [userName, setUserName] = useState<string | undefined>();
-  const [userEmail, setUserEmail] = useState<string | undefined>();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Fetch user session data
-    async function fetchUserData() {
-      try {
-        const response = await fetch('/api/user/me', {
-          credentials: 'include',
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setUserRoles(data.roles || []);
-          setUserName(data.userName);
-          setUserEmail(data.email);
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchUserData();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="p-4">
-        <div className="animate-pulse space-y-4">
-          <div className="h-10 bg-gray-200 rounded"></div>
-          <div className="h-10 bg-gray-200 rounded"></div>
-          <div className="h-10 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    );
-  }
-
+export default function SellerBuyerSidebar({ storeId, userRoles, marketplaceTemplate, onNavigate, userName, userEmail }: SellerBuyerSidebarProps) {
   return (
     <SellerNavigationList
       storeId={storeId}

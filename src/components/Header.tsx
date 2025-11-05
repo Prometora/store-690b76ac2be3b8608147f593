@@ -9,14 +9,19 @@ export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is logged in
+  // Check if store user is logged in
   useEffect(() => {
     async function checkAuth() {
       try {
-        const response = await fetch('/api/user/me', {
+        const response = await fetch('/api/storeuser/session', {
           credentials: 'include',
         });
-        setIsLoggedIn(response.ok);
+        if (response.ok) {
+          const data = await response.json();
+          setIsLoggedIn(data.authenticated === true);
+        } else {
+          setIsLoggedIn(false);
+        }
       } catch (error) {
         setIsLoggedIn(false);
       } finally {
