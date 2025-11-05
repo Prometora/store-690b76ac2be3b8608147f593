@@ -1,7 +1,15 @@
+import { cookies } from 'next/headers';
 import SellerBuyerSidebar from '@/components/seller/SellerBuyerSidebar';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+}
+
+interface UserSession {
+  userId: string;
+  storeId: string;
+  email: string;
+  roles: ('buyer' | 'seller')[];
 }
 
 /**
@@ -12,10 +20,30 @@ export default async function DashboardLayout({
   children,
 }: DashboardLayoutProps) {
   const storeSlug = process.env.NEXT_PUBLIC_STORE_SLUG || process.env.STORE_SLUG || '';
+  const storeName = process.env.NEXT_PUBLIC_STORE_NAME || 'Store';
 
   // Get user session from cookie
-  // Note: In deployed stores, authentication is handled by cookies set by the main Prometora app
-  // The sidebar will fetch user roles from the API
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth-token')?.value;
+
+  let userRoles: ('buyer' | 'seller')[] = [];
+  let userEmail: string | undefined;
+  let userName: string | undefined;
+
+  if (token) {
+    try {
+      const jwt = require('jsonwebtoken');
+      const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
+      const session = jwt.verify(token, JWT_SECRET) as UserSession;
+
+      userRoles = session.roles || [];
+      userEmail = session.email;
+      // Derive username from email
+      userName = session.email?.split('@')[0];
+    } catch (error) {
+      console.error('Error verifying session:', error);
+    }
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -24,7 +52,11 @@ export default async function DashboardLayout({
         <div className="flex flex-col flex-grow pt-5 overflow-y-auto bg-white border-r">
           <SellerBuyerSidebar
             storeId={storeSlug}
+            storeName={storeName}
+            userRoles={userRoles}
             marketplaceTemplate="general"
+            userName={userName}
+            userEmail={userEmail}
           />
         </div>
       </div>
