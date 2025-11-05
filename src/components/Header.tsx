@@ -9,19 +9,15 @@ export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Check if store user is logged in
+  // Check if store user is logged in by checking for auth cookie
   useEffect(() => {
-    async function checkAuth() {
+    function checkAuth() {
       try {
-        const response = await fetch('/api/storeuser/session', {
-          credentials: 'include',
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setIsLoggedIn(data.authenticated === true);
-        } else {
-          setIsLoggedIn(false);
-        }
+        // Check if auth-token cookie exists
+        const hasAuthToken = document.cookie.split(';').some(cookie =>
+          cookie.trim().startsWith('auth-token=')
+        );
+        setIsLoggedIn(hasAuthToken);
       } catch (error) {
         setIsLoggedIn(false);
       } finally {
